@@ -24,3 +24,29 @@ a {
     background: black;
   }
 }
+
+.loader-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  min-height: calc(100vh - 36px);
+}
+
+.loader {
+  border: 5px solid rgba(243, 243, 243, 0.406);
+  border-top: 5px solid rgba(83, 111, 242, 1);
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  animation: spin 0.65s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
