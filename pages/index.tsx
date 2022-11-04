@@ -1,9 +1,11 @@
-import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from "victory"
+import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory"
 
 import Head from "next/head"
 
 import useFetchData from "../hooks/use-fetch"
 import styles from "../styles/Home.module.css"
+
+const colors = ["white", "orange", "brown", "blue", "green"]
 
 export default function Home() {
   const { data: paymentStats, isLoading, isError } = useFetchData()
@@ -23,6 +25,8 @@ export default function Home() {
   const data: any = []
   const tickValues: any = []
   const tickFormat: any = []
+  const barLabels: any = []
+
   paymentStats.merchantStats.forEach((ms: any, merchant: number) => {
     data.push({
       merchant: merchant + 1,
@@ -30,6 +34,7 @@ export default function Home() {
     })
     tickValues.push(merchant + 1)
     tickFormat.push(ms.name)
+    barLabels.push(ms.txCount)
   })
 
   return (
@@ -53,7 +58,19 @@ export default function Home() {
             <VictoryChart domainPadding={40}>
               <VictoryAxis tickValues={[1, 2, 3, 4]} tickFormat={tickFormat} />
               <VictoryAxis dependentAxis tickFormat={(x) => `${x / 1_000_000} MS`} />
-              <VictoryBar data={data} x="merchant" y="satsSpent" />
+              <VictoryBar
+                data={data}
+                x="merchant"
+                y="satsSpent"
+                labels={barLabels}
+                labelComponent={<VictoryLabel dy={30} />}
+                style={{
+                  labels: { fill: "white" },
+                  data: {
+                    fill: ({ datum }) => colors[datum._x],
+                  },
+                }}
+              />
             </VictoryChart>
           </div>
           <div className={styles.dbBox}>
