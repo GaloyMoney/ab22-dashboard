@@ -33,6 +33,25 @@ export default function Home() {
         <h1 className={styles.title}>
           {paymentStats.satsSpent} sats over {paymentStats.txCount} txs
         </h1>
+
+        <div className={styles.dbBottom}>
+          <div className={styles.dbBox}></div>
+          <div className={styles.dbBox}>
+            <div className={styles.boxRow}>
+              <div className={styles.rowLabel}>Largest Tx</div>
+              <div className={styles.rowValue}>{paymentStats.maxTxAmountInSats}</div>
+            </div>
+            <div className={styles.boxRow}>
+              <div className={styles.rowLabel}>Average Tx</div>
+              <div className={styles.rowValue}>{paymentStats.avgTxAmountInSats}</div>
+            </div>
+            <div className={styles.boxRow}>
+              <div className={styles.rowLabel}>Smallest Tx</div>
+              <div className={styles.rowValue}>{paymentStats.minTxAmountInSats}</div>
+            </div>
+          </div>
+          <div className={styles.dbBox}></div>
+        </div>
       </main>
     </div>
   )
