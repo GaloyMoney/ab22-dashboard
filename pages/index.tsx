@@ -7,6 +7,14 @@ import styles from "../styles/Home.module.css"
 
 const colors = ["white", "orange", "brown", "blue", "green"]
 
+const satsFormatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 0,
+})
+
+export const formatSats = (value: number) => {
+  return satsFormatter.format(value)
+}
+
 export default function Home() {
   const { data: paymentStats, isLoading, isError } = useFetchData()
 
@@ -50,7 +58,7 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          {paymentStats.satsSpent} sats over {paymentStats.txCount} txs
+          {formatSats(paymentStats.satsSpent)} sats over {paymentStats.txCount} txs
         </h1>
 
         <div className={styles.dbBottom}>
@@ -76,15 +84,21 @@ export default function Home() {
           <div className={styles.dbBox}>
             <div className={styles.boxRow}>
               <div className={styles.rowLabel}>Largest Tx</div>
-              <div className={styles.rowValue}>{paymentStats.maxTxAmountInSats}</div>
+              <div className={styles.rowValue}>
+                {formatSats(paymentStats.maxTxAmountInSats)}
+              </div>
             </div>
             <div className={styles.boxRow}>
               <div className={styles.rowLabel}>Average Tx</div>
-              <div className={styles.rowValue}>{paymentStats.avgTxAmountInSats}</div>
+              <div className={styles.rowValue}>
+                {formatSats(paymentStats.avgTxAmountInSats)}
+              </div>
             </div>
             <div className={styles.boxRow}>
               <div className={styles.rowLabel}>Smallest Tx</div>
-              <div className={styles.rowValue}>{paymentStats.minTxAmountInSats}</div>
+              <div className={styles.rowValue}>
+                {formatSats(paymentStats.minTxAmountInSats)}
+              </div>
             </div>
           </div>
         </div>
