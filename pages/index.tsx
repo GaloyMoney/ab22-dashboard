@@ -1,3 +1,5 @@
+import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme } from "victory"
+
 import Head from "next/head"
 
 import useFetchData from "../hooks/use-fetch"
@@ -18,6 +20,18 @@ export default function Home() {
     return <div>{isError}</div>
   }
 
+  const data: any = []
+  const tickValues: any = []
+  const tickFormat: any = []
+  paymentStats.merchantStats.forEach((ms: any, merchant: number) => {
+    data.push({
+      merchant: merchant + 1,
+      satsSpent: ms.satsSpent,
+    })
+    tickValues.push(merchant + 1)
+    tickFormat.push(ms.name)
+  })
+
   return (
     <div className={styles.container}>
       <Head>
@@ -35,7 +49,13 @@ export default function Home() {
         </h1>
 
         <div className={styles.dbBottom}>
-          <div className={styles.dbBox}></div>
+          <div className={styles.dbBox}>
+            <VictoryChart domainPadding={40}>
+              <VictoryAxis tickValues={[1, 2, 3, 4]} tickFormat={tickFormat} />
+              <VictoryAxis dependentAxis tickFormat={(x) => `${x / 1_000_000} MS`} />
+              <VictoryBar data={data} x="merchant" y="satsSpent" />
+            </VictoryChart>
+          </div>
           <div className={styles.dbBox}>
             <div className={styles.boxRow}>
               <div className={styles.rowLabel}>Largest Tx</div>
@@ -50,7 +70,6 @@ export default function Home() {
               <div className={styles.rowValue}>{paymentStats.minTxAmountInSats}</div>
             </div>
           </div>
-          <div className={styles.dbBox}></div>
         </div>
       </main>
     </div>

@@ -139,12 +139,10 @@
 }
 
 .dbBox {
-  height: 16rem;
-  width: 16rem;
   display: flex;
+  min-width: 260px;;
   flex-direction: column;
   justify-content: space-evenly;
-  border: thin solid #444;
 }
 
 .boxRow {
