@@ -1,5 +1,7 @@
 .container {
+  max-width: 1024px;
   padding: 0 2rem;
+  margin: 0 auto;
 }
 
 .main {
@@ -126,4 +128,38 @@
   .logo img {
     filter: invert(1);
   }
+}
+
+.dbBottom {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 2rem;
+  margin-top: 5rem;
+}
+
+.dbBox {
+  display: flex;
+  min-width: 260px;;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.boxRow {
+  display: flex;
+  align-items: center;
+}
+
+.rowLabel {
+  font-weight: bold;
+  flex: 1;
+  text-align: center;
+  margin-left: 1rem;
+}
+
+.rowValue {
+  font-size: 1.5rem;
+  flex: 1;
+  text-align: center;
+  margin-right: 1rem;
 }
