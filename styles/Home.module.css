@@ -140,7 +140,7 @@
 
 .dbBox {
   display: flex;
-  min-width: 260px;;
+  min-width: 260px;
   flex-direction: column;
   justify-content: space-evenly;
 }
