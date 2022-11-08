@@ -1,4 +1,12 @@
+import moment from "moment"
 import type { NextApiRequest, NextApiResponse } from "next"
+import {
+  CONFERENCE_START,
+  GRAPHQL_URL,
+  MEMO_TO_MERCHANT,
+  MERCHANT_TOKEN,
+} from "../../config"
+import { getTransactions, Transaction } from "../../services/transactions"
 
 type PaymentStats = {
   satsSpent: number
@@ -73,7 +81,7 @@ const aggregateMerchantStats = (merchantStats: MerchantStats[]): PaymentStatsSum
   let satsSpent = 0
   let txCount = 0
   let maxTxAmountInSats = 0
-  let minTxAmountInSats = merchantStats[0].minTxAmountInSats || 0
+  let minTxAmountInSats = merchantStats[0]?.minTxAmountInSats || 0
   let recentTxs: TxSummary[] = []
 
   for (const merchant of merchantStats) {
@@ -93,13 +101,71 @@ const aggregateMerchantStats = (merchantStats: MerchantStats[]): PaymentStatsSum
     recentTxs,
   }
 }
+const RECENT_TX_LENGTH = 5
 
-export default function handler(
+const merchantStatsFromTransactions = (transactions: Transaction[]): MerchantStats[] => {
+  const filteredTransactions = transactions
+    .filter((tx) => {
+      return moment.unix(tx.createdAt).isAfter(moment(CONFERENCE_START))
+    })
+    .filter((tx) => tx.direction === "RECEIVE" && tx.status === "SUCCESS")
+    .sort((tx1, tx2) => tx1.createdAt - tx2.createdAt)
+
+  const merchantTransactions: Record<string, Transaction[]> = {}
+  
+
+  filteredTransactions.forEach((tx) => {
+    const merchant = (tx.memo && MEMO_TO_MERCHANT[tx.memo]) || "Other"
+    const merchantList = merchantTransactions[merchant] || []
+    merchantList.push(tx)
+    merchantTransactions[merchant] = merchantList
+  })
+
+  const merchantStats: MerchantStats[] = []
+  for (const merchant in merchantTransactions) {
+    const merchantTxList = merchantTransactions[merchant]
+
+    let totalSatsSpent = 0
+    let maxTxAmountInSats = 0
+    let minTxAmountInSats = merchantTxList[0]?.settlementAmount || 0
+
+    merchantTxList.forEach((tx) => {
+      totalSatsSpent += tx.settlementAmount
+      maxTxAmountInSats = Math.max(maxTxAmountInSats, tx.settlementAmount)
+      minTxAmountInSats = Math.min(minTxAmountInSats, tx.settlementAmount)
+    })
+
+    const recentTxs =
+      merchantTxList.length <= RECENT_TX_LENGTH
+        ? merchantTxList
+        : merchantTxList.slice(merchantTxList.length - RECENT_TX_LENGTH)
+
+    merchantStats.push({
+      name: merchant,
+      maxTxAmountInSats,
+      minTxAmountInSats,
+      txCount: merchantTxList.length,
+      satsSpent: totalSatsSpent,
+      avgTxAmountInSats: Math.round(totalSatsSpent / merchantTxList.length),
+      recentTxs: recentTxs.map((tx) => {
+        return { amountInSats: tx.settlementAmount, date: moment.unix(tx.createdAt).toDate() }
+      }),
+    })
+  }
+
+  return merchantStats
+}
+
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<PaymentStatsSummary>,
 ) {
-  const merchantStats = getMockMerchantStats()
+  const transactions = await getTransactions({
+    galoyEndpoint: GRAPHQL_URL,
+    authToken: MERCHANT_TOKEN,
+  })
+  const merchantStats = merchantStatsFromTransactions(transactions)
+  // const merchantStats = getMockMerchantStats()
   const aggregateStats = aggregateMerchantStats(merchantStats)
-
-  setTimeout(() => res.status(200).json(aggregateStats), 823)
+  res.status(200).json(aggregateStats)
 }
