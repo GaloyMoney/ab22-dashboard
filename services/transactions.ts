@@ -89,6 +89,6 @@ export const getTransactions = async ({
 
   return await client
     .request(transactionListForDefaultAccount, { first: 100000})
-    .then((data) => data.me.defaultAccount.transactions.edges.map((edge) => edge.node))
+    .then((data) => data.me.defaultAccount.transactions.edges.map((edge: { node: Transaction }) => edge.node))
     .catch((err) => console.error(err))
 }
