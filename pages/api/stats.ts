@@ -35,48 +35,6 @@ export type PaymentStatsSummary = {
   recentTxs: TxSummary[]
 } & PaymentStats
 
-const getMockMerchantStats = () => {
-  const mockMerchantStats: MerchantStats[] = [
-    {
-      name: "Swag",
-      satsSpent: 932234,
-      txCount: 32,
-      maxTxAmountInSats: 23323,
-      minTxAmountInSats: 2322,
-      avgTxAmountInSats: 12212,
-      recentTxs: [],
-    },
-    {
-      name: "Kebab",
-      satsSpent: 1032234,
-      txCount: 12,
-      maxTxAmountInSats: 43323,
-      minTxAmountInSats: 2372,
-      avgTxAmountInSats: 13212,
-      recentTxs: [],
-    },
-    {
-      name: "Pupusa",
-      satsSpent: 432234,
-      txCount: 22,
-      maxTxAmountInSats: 423323,
-      minTxAmountInSats: 2322,
-      avgTxAmountInSats: 23212,
-      recentTxs: [],
-    },
-    {
-      name: "burger",
-      satsSpent: 932234,
-      txCount: 34,
-      maxTxAmountInSats: 42323,
-      minTxAmountInSats: 222,
-      avgTxAmountInSats: 13212,
-      recentTxs: [],
-    },
-  ]
-  return mockMerchantStats
-}
-
 const aggregateMerchantStats = (merchantStats: MerchantStats[]): PaymentStatsSummary => {
   let satsSpent = 0
   let txCount = 0
@@ -88,7 +46,17 @@ const aggregateMerchantStats = (merchantStats: MerchantStats[]): PaymentStatsSum
     satsSpent += merchant.satsSpent
     txCount += merchant.txCount
     maxTxAmountInSats = Math.max(maxTxAmountInSats, merchant.maxTxAmountInSats)
-    minTxAmountInSats = Math.min(minTxAmountInSats, merchant.minTxAmountInSats)
+    minTxAmountInSats =
+      minTxAmountInSats && merchant.minTxAmountInSats
+        ? Math.min(minTxAmountInSats, merchant.minTxAmountInSats)
+        : minTxAmountInSats || merchant.minTxAmountInSats
+    merchant.recentTxs.forEach((tx) =>
+      recentTxs.push({
+        merchant: merchant.name,
+        amountInSats: tx.amountInSats,
+        date: tx.date,
+      }),
+    )
   }
 
   return {
@@ -98,7 +66,9 @@ const aggregateMerchantStats = (merchantStats: MerchantStats[]): PaymentStatsSum
     minTxAmountInSats,
     avgTxAmountInSats: Math.round(satsSpent / txCount),
     merchantStats,
-    recentTxs,
+    recentTxs: recentTxs
+      .sort((tx1, tx2) => tx2.date.getTime() - tx1.date.getTime())
+      .slice(0, Math.min(recentTxs.length, 5)),
   }
 }
 const RECENT_TX_LENGTH = 5
@@ -109,16 +79,20 @@ const merchantStatsFromTransactions = (transactions: Transaction[]): MerchantSta
       return moment.unix(tx.createdAt).isAfter(moment(CONFERENCE_START))
     })
     .filter((tx) => tx.direction === "RECEIVE" && tx.status === "SUCCESS")
-    .sort((tx1, tx2) => tx1.createdAt - tx2.createdAt)
+    .sort((tx1, tx2) => tx2.createdAt - tx1.createdAt)
 
   const merchantTransactions: Record<string, Transaction[]> = {}
-  
+
+  for (const [, value] of Object.entries(MEMO_TO_MERCHANT)) {
+    merchantTransactions[value] = []
+  }
 
   filteredTransactions.forEach((tx) => {
-    const merchant = (tx.memo && MEMO_TO_MERCHANT[tx.memo]) || "Other"
-    const merchantList = merchantTransactions[merchant] || []
-    merchantList.push(tx)
-    merchantTransactions[merchant] = merchantList
+    const merchant = tx.memo && MEMO_TO_MERCHANT[tx.memo]
+    const merchantList = merchant ? merchantTransactions[merchant] : null
+    if (merchantList) {
+      merchantList.push(tx)
+    }
   })
 
   const merchantStats: MerchantStats[] = []
@@ -135,10 +109,10 @@ const merchantStatsFromTransactions = (transactions: Transaction[]): MerchantSta
       minTxAmountInSats = Math.min(minTxAmountInSats, tx.settlementAmount)
     })
 
-    const recentTxs =
-      merchantTxList.length <= RECENT_TX_LENGTH
-        ? merchantTxList
-        : merchantTxList.slice(merchantTxList.length - RECENT_TX_LENGTH)
+    const recentTxs = merchantTxList.slice(
+      0,
+      Math.min(merchantTxList.length, RECENT_TX_LENGTH),
+    )
 
     merchantStats.push({
       name: merchant,
@@ -148,7 +122,10 @@ const merchantStatsFromTransactions = (transactions: Transaction[]): MerchantSta
       satsSpent: totalSatsSpent,
       avgTxAmountInSats: Math.round(totalSatsSpent / merchantTxList.length),
       recentTxs: recentTxs.map((tx) => {
-        return { amountInSats: tx.settlementAmount, date: moment.unix(tx.createdAt).toDate() }
+        return {
+          amountInSats: tx.settlementAmount,
+          date: moment.unix(tx.createdAt).toDate(),
+        }
       }),
     })
   }
@@ -165,7 +142,87 @@ export default async function handler(
     authToken: MERCHANT_TOKEN,
   })
   const merchantStats = merchantStatsFromTransactions(transactions)
-  // const merchantStats = getMockMerchantStats()
   const aggregateStats = aggregateMerchantStats(merchantStats)
+
   res.status(200).json(aggregateStats)
+}
+
+const mockAggregateStats = {
+  satsSpent: 215119,
+  txCount: 20,
+  maxTxAmountInSats: 112413,
+  minTxAmountInSats: 5,
+  avgTxAmountInSats: 10756,
+  merchantStats: [
+    {
+      name: "Other",
+      maxTxAmountInSats: 21087,
+      minTxAmountInSats: 5,
+      txCount: 14,
+      satsSpent: 21311,
+      avgTxAmountInSats: 1522,
+      recentTxs: [
+        { amountInSats: 5, date: "2022-11-10T18:55:17.000Z" },
+        { amountInSats: 5, date: "2022-11-10T18:03:59.000Z" },
+        { amountInSats: 5, date: "2022-11-09T23:36:53.000Z" },
+        { amountInSats: 164, date: "2022-11-09T04:36:25.000Z" },
+        { amountInSats: 5, date: "2022-11-08T20:43:19.000Z" },
+      ],
+    },
+    {
+      name: "Swag",
+      maxTxAmountInSats: 112413,
+      minTxAmountInSats: 112413,
+      txCount: 1,
+      satsSpent: 112413,
+      avgTxAmountInSats: 112413,
+      recentTxs: [{ amountInSats: 112413, date: "2022-11-10T15:12:37.000Z" }],
+    },
+    {
+      name: "Pupusa",
+      maxTxAmountInSats: 5614,
+      minTxAmountInSats: 5614,
+      txCount: 1,
+      satsSpent: 5614,
+      avgTxAmountInSats: 5614,
+      recentTxs: [{ amountInSats: 5614, date: "2022-11-10T15:11:56.000Z" }],
+    },
+    {
+      name: "Ceviche",
+      maxTxAmountInSats: 22410,
+      minTxAmountInSats: 22410,
+      txCount: 1,
+      satsSpent: 22410,
+      avgTxAmountInSats: 22410,
+      recentTxs: [{ amountInSats: 22410, date: "2022-11-10T15:11:24.000Z" }],
+    },
+    {
+      name: "Burger",
+      maxTxAmountInSats: 19564,
+      minTxAmountInSats: 19564,
+      txCount: 1,
+      satsSpent: 19564,
+      avgTxAmountInSats: 19564,
+      recentTxs: [{ amountInSats: 19564, date: "2022-11-10T15:10:33.000Z" }],
+    },
+    {
+      name: "Kebab",
+      maxTxAmountInSats: 22552,
+      minTxAmountInSats: 11255,
+      txCount: 2,
+      satsSpent: 33807,
+      avgTxAmountInSats: 16904,
+      recentTxs: [
+        { amountInSats: 22552, date: "2022-11-10T15:05:47.000Z" },
+        { amountInSats: 11255, date: "2022-11-10T15:05:10.000Z" },
+      ],
+    },
+  ],
+  recentTxs: [
+    { merchant: "Other", amountInSats: 5, date: "2022-11-10T18:55:17.000Z" },
+    { merchant: "Other", amountInSats: 5, date: "2022-11-10T18:03:59.000Z" },
+    { merchant: "Swag", amountInSats: 112413, date: "2022-11-10T15:12:37.000Z" },
+    { merchant: "Pupusa", amountInSats: 5614, date: "2022-11-10T15:11:56.000Z" },
+    { merchant: "Ceviche", amountInSats: 22410, date: "2022-11-10T15:11:24.000Z" },
+  ],
 }

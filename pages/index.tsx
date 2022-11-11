@@ -1,5 +1,10 @@
-import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory"
-
+import {
+  VictoryBar,
+  VictoryChart,
+  VictoryAxis,
+  VictoryLabel,
+  VictoryTheme,
+} from "victory"
 import Head from "next/head"
 
 import useFetchData from "../hooks/use-fetch"
@@ -7,12 +12,12 @@ import styles from "../styles/Home.module.css"
 
 const colors = ["white", "orange", "brown", "blue", "green"]
 
-const satsFormatter = new Intl.NumberFormat("en-US", {
+const integerFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 })
 
-export const formatSats = (value: number) => {
-  return satsFormatter.format(value)
+export const formatInteger = (value: number) => {
+  return integerFormatter.format(value)
 }
 
 export default function Home() {
@@ -33,16 +38,20 @@ export default function Home() {
   const data: any = []
   const tickValues: any = []
   const tickFormat: any = []
-  const barLabels: any = []
 
-  paymentStats.merchantStats.forEach((ms: any, merchant: number) => {
-    data.push({
-      merchant: merchant + 1,
-      satsSpent: ms.satsSpent,
+  paymentStats.merchantStats
+    .sort((m1, m2) => m1.name.localeCompare(m2.name))
+    .forEach((ms: any, merchantIndex: number) => {
+      data.push({
+        merchant: merchantIndex + 1,
+        satsSpent: ms.satsSpent,
+      })
+      tickValues.push(merchantIndex + 1)
+      tickFormat.push(ms.name)
     })
-    tickValues.push(merchant + 1)
-    tickFormat.push(ms.name)
-    barLabels.push(ms.txCount)
+
+  const txs = paymentStats.recentTxs.map((tx, index) => {
+    return { txNumber: paymentStats.txCount - index, ...tx }
   })
 
   return (
@@ -57,51 +66,95 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          {formatSats(paymentStats.satsSpent)} sats over {paymentStats.txCount} txs
-        </h1>
-
-        <div className={styles.dbBottom}>
-          <div className={styles.dbBox}>
-            <VictoryChart domainPadding={40}>
-              <VictoryAxis tickValues={[1, 2, 3, 4]} tickFormat={tickFormat} />
-              <VictoryAxis dependentAxis tickFormat={(x) => `${x / 1_000_000} MS`} />
+        <div className={styles.headerContainer}>
+          <h1>Adopting Bitcoin Lightning Transactions Feed</h1>
+          <img src="BBWLogo.svg" className={styles.BBWLogo} />
+        </div>
+        <div className={styles.cardContainer}>
+          <div className={styles.infoCard}>
+            <h2>Transactions Volume</h2>
+            <div className={styles.bigStats}>
+              <p>{formatInteger(paymentStats.satsSpent)} sats</p>
+              <p>{formatInteger(paymentStats.txCount)} transactions</p>
+            </div>
+          </div>
+          <div className={styles.infoCard}>
+            <h2>Latest Transactions</h2>
+            <table className={styles.txTable}>
+              <thead>
+                <tr>
+                  <th>TX Number</th>
+                  <th>Amount</th>
+                  <th>Merchant</th>
+                </tr>
+              </thead>
+              <tbody>
+                {txs.map((tx) => (
+                  <tr key={tx.txNumber}>
+                    <td>#{tx.txNumber}</td>
+                    <td>{formatInteger(tx.amountInSats)} sats</td>
+                    <td>{tx.merchant}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className={styles.chartCard}>
+            <h2>Transaction volume breakdown by merchant</h2>
+            <VictoryChart width={1000} domainPadding={40}>
+              <VictoryAxis
+                tickValues={tickValues}
+                tickFormat={tickFormat}
+                theme={VictoryTheme.material}
+              />
+              <VictoryAxis
+                style={{
+                  grid: { stroke: "#E5E7EB", strokeWidth: 1 },
+                }}
+                dependentAxis
+              />
               <VictoryBar
                 data={data}
                 x="merchant"
                 y="satsSpent"
-                labels={barLabels}
                 labelComponent={<VictoryLabel dy={30} />}
                 style={{
-                  labels: { fill: "white" },
                   data: {
-                    fill: ({ datum }) => colors[datum._x],
+                    fill: "#536FF2",
                   },
                 }}
               />
             </VictoryChart>
           </div>
-          <div className={styles.dbBox}>
-            <div className={styles.boxRow}>
-              <div className={styles.rowLabel}>Largest Tx</div>
-              <div className={styles.rowValue}>
-                {formatSats(paymentStats.maxTxAmountInSats)}
+          <div className={styles.infoCard}>
+            <h2>Transaction Statistics</h2>
+            <div className={styles.statsContainer}>
+              <div className={styles.statsRow}>
+                <div className={styles.rowLabel}>Largest Tx</div>
+                <div className={styles.rowValue}>
+                  {formatInteger(paymentStats.maxTxAmountInSats)} sats
+                </div>
               </div>
-            </div>
-            <div className={styles.boxRow}>
-              <div className={styles.rowLabel}>Average Tx</div>
-              <div className={styles.rowValue}>
-                {formatSats(paymentStats.avgTxAmountInSats)}
+              <div className={styles.statsRow}>
+                <div className={styles.rowLabel}>Average Tx</div>
+                <div className={styles.rowValue}>
+                  {formatInteger(paymentStats.avgTxAmountInSats)} sats
+                </div>
               </div>
-            </div>
-            <div className={styles.boxRow}>
-              <div className={styles.rowLabel}>Smallest Tx</div>
-              <div className={styles.rowValue}>
-                {formatSats(paymentStats.minTxAmountInSats)}
+              <div className={styles.statsRow}>
+                <div className={styles.rowLabel}>Smallest Tx</div>
+                <div className={styles.rowValue}>
+                  {formatInteger(paymentStats.minTxAmountInSats)} sats
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        <footer className={styles.footer}>
+          <p>Powered by</p>
+          <img src="GaloyLogo.svg" className={styles.galoyLogo} />
+        </footer>
       </main>
     </div>
   )
