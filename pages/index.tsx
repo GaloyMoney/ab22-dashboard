@@ -101,14 +101,17 @@ export default function Home() {
           </div>
           <div className={styles.chartCard}>
             <h2>Transaction volume breakdown by merchant</h2>
-            <VictoryChart width={1000} domainPadding={40}>
+            <VictoryChart width={700} domainPadding={40}>
               <VictoryAxis
                 tickValues={tickValues}
                 tickFormat={tickFormat}
-                theme={VictoryTheme.material}
+                style={{
+                  tickLabels: { fontSize: 20, fill: "#535354" },
+                }}
               />
               <VictoryAxis
                 style={{
+                  tickLabels: { fontSize: 20, fill: "#535354" },
                   grid: { stroke: "#E5E7EB", strokeWidth: 1 },
                 }}
                 dependentAxis
