@@ -1,6 +1,6 @@
 .container {
   padding: 2%;
-  height: 45vh;
+  height: 50vw;
   display: flex;
   background-color: #edf0f7;
   border-radius: 1rem;
@@ -35,7 +35,7 @@
   flex: 1;
   min-width: 30rem;
   border-radius: 0.4rem;
-  height: 16vh;
+  height: 16vw;
   background-color: white;
   padding: 1.5rem;
   margin: 1rem;
