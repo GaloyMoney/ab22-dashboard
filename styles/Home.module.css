@@ -1,6 +1,6 @@
 .container {
-  padding: 2%;
-  height: 50vw;
+  padding: 3%;
+  height: 52vw;
   display: flex;
   background-color: #edf0f7;
   border-radius: 1rem;
@@ -13,8 +13,9 @@
 .txTable {
   flex: 1;
 }
+
 .txTable th {
-  text-align: start;
+  font-weight: 600;
 }
 
 .headerContainer {
@@ -40,6 +41,7 @@
   padding: 1.5rem;
   margin: 1rem;
   display: flex;
+  overflow: hidden;
   flex-direction: column;
 }
 
@@ -52,7 +54,8 @@
 
 .bigStats p {
   margin: 0.5rem;
-  font-size: 2rem;
+  color: #656566;
+  font-size: 2.5rem;
 }
 
 .infoCard h2 {
@@ -136,6 +139,22 @@
   flex-direction: column;
   justify-content: space-around;
 }
+
+#AmountHeader {
+  padding-right: 1rem;
+  text-align: end;
+  color: blue;
+}
+
+.txNumberColumn {
+  text-align: left;
+}
+
+.amountColumn,
+.merchantColumn {
+  text-align: end;
+}
+
 
 .statsRow {
   display: flex;
