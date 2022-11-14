@@ -3,14 +3,11 @@ import {
   VictoryChart,
   VictoryAxis,
   VictoryLabel,
-  VictoryTheme,
 } from "victory"
 import Head from "next/head"
 
 import useFetchData from "../hooks/use-fetch"
 import styles from "../styles/Home.module.css"
-
-const colors = ["white", "orange", "brown", "blue", "green"]
 
 const integerFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
@@ -52,7 +49,7 @@ export default function Home() {
 
   const txs = paymentStats.recentTxs.map((tx, index) => {
     return { txNumber: paymentStats.txCount - index, ...tx }
-  })
+  }).slice(0, Math.min(paymentStats.recentTxs.length, 4))
 
   return (
     <div className={styles.container}>
@@ -72,47 +69,48 @@ export default function Home() {
         </div>
         <div className={styles.cardContainer}>
           <div className={styles.infoCard}>
-            <h2>Transactions Volume</h2>
+            <h2>Transactions volume</h2>
             <div className={styles.bigStats}>
               <p>{formatInteger(paymentStats.satsSpent)} sats</p>
               <p>{formatInteger(paymentStats.txCount)} transactions</p>
             </div>
           </div>
           <div className={styles.infoCard}>
-            <h2>Latest Transactions</h2>
-            <table className={styles.txTable}>
+            <h2>Latest transactions</h2>
+            { paymentStats.txCount > 0 ? <table className={styles.txTable}>
               <thead>
                 <tr>
-                  <th>TX Number</th>
-                  <th>Amount</th>
-                  <th>Merchant</th>
+                  <th className={styles.txNumberColumn}>TX Number</th>
+                  <th className={styles.amountColumn}>Amount</th>
+                  <th className={styles.merchantColumn}>Merchant</th>
                 </tr>
               </thead>
               <tbody>
                 {txs.map((tx) => (
                   <tr key={tx.txNumber}>
                     <td>#{tx.txNumber}</td>
-                    <td>{formatInteger(tx.amountInSats)} sats</td>
-                    <td>{tx.merchant}</td>
+                    <td className={styles.amountColumn}>{formatInteger(tx.amountInSats)} sats</td>
+                    <td className={styles.merchantColumn}>{tx.merchant}</td>
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table> : <p>No transactions</p>}
+            
           </div>
           <div className={styles.chartCard}>
             <h2>Transaction volume breakdown by merchant</h2>
-            <VictoryChart width={700} domainPadding={40}>
+            <VictoryChart width={1000} domainPadding={50}>
               <VictoryAxis
                 tickValues={tickValues}
                 tickFormat={tickFormat}
                 style={{
-                  tickLabels: { fontSize: 20, fill: "#535354" },
+                  tickLabels: { fontSize: 20, fill: "#535354", fontWeight: 350 },
                 }}
               />
               <VictoryAxis
                 style={{
-                  tickLabels: { fontSize: 20, fill: "#535354" },
-                  grid: { stroke: "#E5E7EB", strokeWidth: 1 },
+                  tickLabels: { fontSize: 20, fill: "#535354", fontWeight: 350 },
+                  grid: { stroke: "#E5E7EB", strokeWidth: .5 },
                 }}
                 dependentAxis
               />
@@ -130,7 +128,7 @@ export default function Home() {
             </VictoryChart>
           </div>
           <div className={styles.infoCard}>
-            <h2>Transaction Statistics</h2>
+            <h2>Transaction statistics</h2>
             <div className={styles.statsContainer}>
               <div className={styles.statsRow}>
                 <div className={styles.rowLabel}>Largest Tx</div>
