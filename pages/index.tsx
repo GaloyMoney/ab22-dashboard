@@ -112,7 +112,7 @@ export default function Home() {
                   tickLabels: { fontSize: 20, fill: "#535354", fontWeight: 350 },
                   grid: { stroke: "#E5E7EB", strokeWidth: .5 },
                 }}
-                tickFormat={(value, index)=> value > 1 ? formatInteger(value) : formatInteger(index * 100000000)}
+                tickFormat={(value, index)=> value > 1 ? formatInteger(value) : formatInteger((index+1) * 1000000)}
                 dependentAxis
               />
               <VictoryBar
