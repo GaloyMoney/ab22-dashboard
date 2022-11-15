@@ -8,6 +8,7 @@ import Head from "next/head"
 
 import useFetchData from "../hooks/use-fetch"
 import styles from "../styles/Home.module.css"
+import { useEffect, useRef } from "react"
 
 const integerFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
@@ -19,6 +20,22 @@ export const formatInteger = (value: number) => {
 
 export default function Home() {
   const { data: paymentStats, isLoading, isError } = useFetchData()
+
+  function usePrevious(value: any) {
+    const ref = useRef();
+    useEffect(() => {
+      ref.current = value;
+    });
+    return ref.current;
+  }
+
+  const prevPaymentStats = usePrevious({data: paymentStats});
+  useEffect(() => {
+    if(prevPaymentStats !== paymentStats) {
+      playSound()
+    }
+  }, [paymentStats])
+
 
   if (isLoading || !paymentStats) {
     return (
@@ -50,6 +67,25 @@ export default function Home() {
   const txs = paymentStats.recentTxs.map((tx, index) => {
     return { txNumber: paymentStats.txCount - index, ...tx }
   }).slice(0, Math.min(paymentStats.recentTxs.length, 4))
+
+  function playSound() {
+    try {
+      const env = process.env.NODE_ENV
+      let audioUrl = "http://localhost:3000/ding.mp3"
+      if(env !== "development"){
+        audioUrl = "https://ab22-dashboard.vercel.app/ding.mp3"
+      }
+      console.log(audioUrl);
+      const audio = new Audio(audioUrl);
+      audio.muted = true;
+      audio.muted = false;
+      audio.play();
+      console.log( "ding!" );
+    } catch(e){
+      console.error(e)
+    }
+
+  }
 
   return (
     <div className={styles.container}>
@@ -95,7 +131,7 @@ export default function Home() {
                 ))}
               </tbody>
             </table> : <p>No transactions</p>}
-            
+
           </div>
           <div className={styles.chartCard}>
             <h2>{`Sats volume by merchant`}</h2>
@@ -157,11 +193,11 @@ export default function Home() {
           <p className={styles.hashtag}>
             #SpendSats
           </p>
-          
+
              <p>Powered by</p>
            <img src="GaloyLogo.svg" className={styles.galoyLogo} />
-           
-          
+
+
         </footer>
       </main>
     </div>
