@@ -29,7 +29,7 @@ export default function Home() {
   }
 
   if (isError) {
-    return <div>{isError}</div>
+    console.error(isError)
   }
 
   const data: any = []
