@@ -8,7 +8,8 @@ export const MEMO_TO_MERCHANT: Record<string, string> = {
   AB22Pupusas: "Pupusas",
   AB22Wraps: "Wraps",
   AB22Bar1: "Bar 1",
-  AB22Bar2: "Bar 2"
+  AB22Bar2: "Bar 2",
+  AB22Donations: "Donations"
 }
 export const CONFERENCE_START = new Date(
   process.env.CONFERENCE_START || "2022-10-03T00:00:00",

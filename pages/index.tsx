@@ -69,7 +69,7 @@ export default function Home() {
         </div>
         <div className={styles.cardContainer}>
           <div className={styles.infoCard}>
-            <h2>Transactions volume</h2>
+            <h2>Transaction volume</h2>
             <div className={styles.bigStats}>
               <p>{formatInteger(paymentStats.satsSpent)} sats</p>
               <p>{formatInteger(paymentStats.txCount)} transactions</p>
@@ -98,7 +98,7 @@ export default function Home() {
             
           </div>
           <div className={styles.chartCard}>
-            <h2>Transaction volume breakdown by merchant</h2>
+            <h2>{`Sats volume by merchant`}</h2>
             <VictoryChart width={1000} domainPadding={50}>
               <VictoryAxis
                 tickValues={tickValues}
@@ -112,6 +112,7 @@ export default function Home() {
                   tickLabels: { fontSize: 20, fill: "#535354", fontWeight: 350 },
                   grid: { stroke: "#E5E7EB", strokeWidth: .5 },
                 }}
+                tickFormat={(value, index)=> value > 1 ? formatInteger(value) : formatInteger(index * 100000000)}
                 dependentAxis
               />
               <VictoryBar
@@ -153,8 +154,14 @@ export default function Home() {
         </div>
 
         <footer className={styles.footer}>
-          <p>Powered by</p>
-          <img src="GaloyLogo.svg" className={styles.galoyLogo} />
+          <p className={styles.hashtag}>
+            #SpendSats
+          </p>
+          
+             <p>Powered by</p>
+           <img src="GaloyLogo.svg" className={styles.galoyLogo} />
+           
+          
         </footer>
       </main>
     </div>
