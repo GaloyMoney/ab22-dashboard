@@ -141,6 +141,7 @@ export default async function handler(
     galoyEndpoint: GRAPHQL_URL,
     authToken: MERCHANT_TOKEN,
   })
+  console.log(transactions)
   const merchantStats = merchantStatsFromTransactions(transactions)
   const aggregateStats = aggregateMerchantStats(merchantStats)
 
