@@ -1,6 +1,6 @@
 .container {
   padding: 3%;
-  height: 52vw;
+  height: 100vh;
   display: flex;
   background-color: #edf0f7;
   border-radius: 1rem;
@@ -36,7 +36,7 @@
   flex: 1;
   min-width: 30rem;
   border-radius: 0.4rem;
-  height: 16vw;
+  height: 17vw;
   background-color: white;
   padding: 1.5rem;
   margin: 1rem;
@@ -87,9 +87,21 @@
   justify-content: space-between;
 }
 
+.hashtag {
+  font-size: 1.6rem;
+  margin-right: auto;
+}
+
+
 .footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+}
+
+
+.poweredBy {
+  display: inline-flex;
   align-items: center;
 }
 

@@ -1,12 +1,11 @@
 html,
 body {
-  padding: 2%;
   font-size: 1.25vw;
   margin: 0;
   color: #535354;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu,
     Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-  background-color: #536ff2;
+  background-color: #edf0f7;
 }
 
 h1 {
